@@ -222,6 +222,7 @@ internal fun MediaPlayerContent(
                     shadowColor = playerPreferences.subtitleShadowColor,
                     shadowRadius = playerPreferences.subtitleShadowRadius,
                     externalFontUri = playerPreferences.subtitleExternalFontUri,
+                    backgroundOpacity = playerPreferences.subtitleBackgroundOpacity,
                 ),
             )
             if (volumeAndBrightnessGestureState != null) {

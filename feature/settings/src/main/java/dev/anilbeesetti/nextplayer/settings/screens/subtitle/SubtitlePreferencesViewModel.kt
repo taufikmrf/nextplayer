@@ -85,6 +85,9 @@ class SubtitlePreferencesViewModel(
             is SubtitlePreferencesUiEvent.UpdateSubtitleExternalFont -> updateSubtitleExternalFont(
                 action.value,
             )
+
+            is SubtitlePreferencesUiEvent.UpdateSubtitleBackgroundOpacity ->
+                updateSubtitleBackgroundOpacity(action.value)
         }
     }
 
@@ -155,6 +158,14 @@ class SubtitlePreferencesViewModel(
         }
     }
 
+    private fun updateSubtitleBackgroundOpacity(value: Float) {
+        viewModelScope.launch {
+            preferencesRepository.updatePlayerPreferences {
+                it.copy(subtitleBackgroundOpacity = value)
+            }
+        }
+    }
+
     private fun toggleSubtitleBackground() {
         viewModelScope.launch {
             preferencesRepository.updatePlayerPreferences {
@@ -218,6 +229,7 @@ sealed interface SubtitlePreferencesUiEvent {
     data class UpdateSubtitleShadowColor(val value: Int) : SubtitlePreferencesUiEvent
     data class UpdateSubtitleShadowRadius(val value: Float) : SubtitlePreferencesUiEvent
     data class UpdateSubtitleExternalFont(val value: String) : SubtitlePreferencesUiEvent
+    data class UpdateSubtitleBackgroundOpacity(val value: Float) : SubtitlePreferencesUiEvent
     data object ToggleSubtitleBackground : SubtitlePreferencesUiEvent
     data object ToggleApplyEmbeddedStyles : SubtitlePreferencesUiEvent
     data class UpdateSubtitleEncoding(val value: String) : SubtitlePreferencesUiEvent

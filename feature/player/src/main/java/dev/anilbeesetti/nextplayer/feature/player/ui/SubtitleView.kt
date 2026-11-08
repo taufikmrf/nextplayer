@@ -235,11 +235,25 @@ private fun createCaptionStyle(
             null
         } ?: configuration.font.toTypeface()
 
+        val bgColor = if (configuration.showBackground) {
+            val alpha = (configuration.backgroundOpacity * 255).toInt().coerceIn(
+                0,
+                255,
+            )
+            android.graphics.Color.argb(
+                alpha,
+                0,
+                0,
+                0,
+            )
+        } else {
+            android.graphics.Color.TRANSPARENT
+        }
+
         CaptionStyleCompat(
             configuration.textColor,
-            android.graphics.Color.BLACK.takeIf { configuration.showBackground }
-                ?: android.graphics.Color.TRANSPARENT,
             android.graphics.Color.TRANSPARENT,
+            bgColor,
             if (configuration.shadowRadius > 0f && configuration.shadowColor != 0) {
                 CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW
             } else {
@@ -297,4 +311,5 @@ data class SubtitleConfiguration(
     val shadowColor: Int = 0,
     val shadowRadius: Float = 0.0f,
     val externalFontUri: String = "",
+    val backgroundOpacity: Float = 0.75f,
 )

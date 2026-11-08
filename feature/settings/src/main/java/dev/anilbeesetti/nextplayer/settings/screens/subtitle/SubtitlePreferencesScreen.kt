@@ -392,6 +392,38 @@ private fun SubtitlePreferencesScreenContent(
                     isChecked = state.preferences.subtitleBackground,
                     onClick = { onAction(SubtitlePreferencesUiEvent.ToggleSubtitleBackground) },
                 )
+                val isBackgroundEnabled = state.preferences.useSystemCaptionStyle.not() &&
+                    state.preferences.subtitleBackground
+                PreferenceSlider(
+                    title = stringResource(id = R.string.subtitle_background_opacity),
+                    description = "${(state.preferences.subtitleBackgroundOpacity * 100).toInt()}%",
+                    icon = NextIcons.Contrast,
+                    enabled = isBackgroundEnabled,
+                    value = state.preferences.subtitleBackgroundOpacity,
+                    valueRange = 0f..1f,
+                    onValueChange = {
+                        onAction(SubtitlePreferencesUiEvent.UpdateSubtitleBackgroundOpacity(it))
+                    },
+                    trailingContent = {
+                        FilledIconButton(
+                            enabled = isBackgroundEnabled,
+                            onClick = {
+                                onAction(
+                                    SubtitlePreferencesUiEvent.UpdateSubtitleBackgroundOpacity(
+                                        PlayerPreferences.DEFAULT_SUBTITLE_BACKGROUND_OPACITY,
+                                    ),
+                                )
+                            },
+                        ) {
+                            Icon(
+                                imageVector = NextIcons.History,
+                                contentDescription = stringResource(
+                                    id = R.string.reset_seek_increment,
+                                ),
+                            )
+                        }
+                    },
+                )
                 ClickablePreferenceItem(
                     title = stringResource(id = R.string.subtitle_shadow_color),
                     description = getSubtitleShadowColorName(state.preferences.subtitleShadowColor),

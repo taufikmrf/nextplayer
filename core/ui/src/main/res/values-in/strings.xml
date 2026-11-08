@@ -134,6 +134,7 @@
     <string name="subtitle_desc">Penampilan subtitle, opsi pemutaran</string>
     <string name="subtitle_background">Latar belakang subtitle</string>
     <string name="subtitle_background_desc">Aktifkan latar belakang untuk teks subtitle</string>
+    <string name="subtitle_background_opacity">Opasitas latar belakang subtitle</string>
     <string name="decoder">Dekoder</string>
     <string name="decoder_desc">Pilihan dekoder perangkat keras dan perangkat lunak</string>
     <string name="video_software_decoders">Dekoder video perangkat lunak</string>
