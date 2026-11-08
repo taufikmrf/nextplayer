@@ -45,6 +45,7 @@ dependencies {
     implementation(project(":core:media"))
     implementation(project(":core:model"))
     implementation(project(":core:ui"))
+    implementation(project(":feature:settings"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.pip)
@@ -82,6 +83,7 @@ dependencies {
     // Koin
     implementation(libs.koin.android)
     implementation(libs.koin.annotations)
+    implementation(libs.koin.compose.viewmodel)
 
     testImplementation(libs.junit4)
     testImplementation(libs.mockito.core)

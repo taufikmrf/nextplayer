@@ -53,6 +53,7 @@ class PlayerViewModelTest {
                 navigateUp = {},
                 selectSubtitle = {},
                 selectAudio = {},
+                openSubtitleSettings = {},
                 playInBackground = {},
                 setVideoDecoderMode = {},
                 setAudioDecoderMode = {},

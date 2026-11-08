@@ -84,6 +84,7 @@ import dev.anilbeesetti.nextplayer.navigation.openPlaylist
 import dev.anilbeesetti.nextplayer.navigation.playlistNavGraph
 import dev.anilbeesetti.nextplayer.navigation.rememberTopLevelNavState
 import dev.anilbeesetti.nextplayer.navigation.settingsNavGraph
+import dev.anilbeesetti.nextplayer.settings.navigation.navigateToSubtitlePreferences
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -162,6 +163,17 @@ class MainActivity : FragmentActivity() {
                         pendingPlaylistId?.let { playlistId ->
                             navState.openPlaylist(playlistId = playlistId)
                             pendingPlaylistId = null
+                        }
+                    }
+
+                    LaunchedEffect(key1 = Unit) {
+                        if (intent.getBooleanExtra(
+                                "open_subtitle_settings",
+                                false,
+                            )
+                        ) {
+                            intent.removeExtra("open_subtitle_settings")
+                            navState.currentStack.navigateToSubtitlePreferences()
                         }
                     }
 

@@ -19,8 +19,20 @@ fun NavBackStack<NavKey>.navigateToSubtitlePreferences() {
 
 fun EntryProviderScope<NavKey>.subtitlePreferencesEntry(onNavigateUp: () -> Unit) {
     entry<SubtitlePreferencesRoute> {
+        val context = androidx.compose.ui.platform.LocalContext.current
         val output = SubtitlePreferencesViewModel.Output(
-            navigateUp = onNavigateUp,
+            navigateUp = {
+                val activity = context as? android.app.Activity
+                if (activity?.intent?.getBooleanExtra(
+                        "open_subtitle_settings",
+                        false,
+                    ) == true
+                ) {
+                    activity.finish()
+                } else {
+                    onNavigateUp()
+                }
+            },
         )
         val viewModel = koinViewModel<SubtitlePreferencesViewModel>(
             parameters = { parametersOf(output) },

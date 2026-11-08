@@ -107,6 +107,7 @@ class KoinGraphTest {
                         navigateUp = {},
                         selectSubtitle = {},
                         selectAudio = {},
+                        openSubtitleSettings = {},
                         playInBackground = {},
                         setVideoDecoderMode = {},
                         setAudioDecoderMode = {},

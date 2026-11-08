@@ -45,7 +45,11 @@ import dev.anilbeesetti.nextplayer.feature.player.ui.PlayerVerticalGestureIndica
 import dev.anilbeesetti.nextplayer.feature.player.ui.SubtitleConfiguration
 import dev.anilbeesetti.nextplayer.feature.player.ui.preview.rememberPreviewPlayer
 import dev.anilbeesetti.nextplayer.feature.player.utils.PlayerApi
+import dev.anilbeesetti.nextplayer.settings.screens.subtitle.SubtitlePreferencesScreen
+import dev.anilbeesetti.nextplayer.settings.screens.subtitle.SubtitlePreferencesViewModel
 import kotlin.time.Duration.Companion.seconds
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 val LocalControlsVisibilityState = compositionLocalOf<ControlsVisibilityState?> { null }
 val LocalUseMaterialYouControls = compositionLocalOf { false }
@@ -54,13 +58,28 @@ val LocalUseMaterialYouControls = compositionLocalOf { false }
 @Composable
 fun MediaPlayerScreen(viewModel: PlayerViewModel, player: Player?, api: PlayerApi? = null) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    var showSubtitlePreferences by remember { mutableStateOf(false) }
 
-    MediaPlayerContent(
-        player = player,
-        state = state,
-        onAction = viewModel::onAction,
-        api = api,
-    )
+    if (showSubtitlePreferences) {
+        val subtitlePreferencesViewModel = koinViewModel<SubtitlePreferencesViewModel>(
+            parameters = {
+                parametersOf(
+                    SubtitlePreferencesViewModel.Output(
+                        navigateUp = { showSubtitlePreferences = false },
+                    ),
+                )
+            },
+        )
+        SubtitlePreferencesScreen(viewModel = subtitlePreferencesViewModel)
+    } else {
+        MediaPlayerContent(
+            player = player,
+            state = state,
+            onAction = viewModel::onAction,
+            api = api,
+            onOpenSubtitleSettingsClick = { showSubtitlePreferences = true },
+        )
+    }
 }
 
 @OptIn(UnstableApi::class)
@@ -70,6 +89,7 @@ internal fun MediaPlayerContent(
     state: PlayerUiState,
     onAction: (PlayerAction) -> Unit,
     api: PlayerApi? = null,
+    onOpenSubtitleSettingsClick: () -> Unit = {},
 ) {
     val playerPreferences = state.playerPreferences
     val isPreview = LocalInspectionMode.current
@@ -242,6 +262,7 @@ internal fun MediaPlayerContent(
                     }
                 }
             },
+            onOpenSubtitleSettingsClick = onOpenSubtitleSettingsClick,
         )
         if (volumeAndBrightnessGestureState != null && volumeState != null &&
             brightnessState != null

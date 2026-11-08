@@ -56,6 +56,7 @@ fun BoxScope.SubtitleSelectorView(
     show: Boolean,
     player: Player,
     onSelectSubtitleClick: () -> Unit,
+    onOpenSubtitleSettingsClick: () -> Unit = {},
     onEvent: (SubtitleOptionsEvent) -> Unit = {},
     onDismiss: () -> Unit,
 ) {
@@ -119,6 +120,14 @@ fun BoxScope.SubtitleSelectorView(
                 value = subtitleOptionsState.speedMultiplier,
                 onValueChange = { subtitleOptionsState.setSpeed(speed = it) },
             )
+            Spacer(modifier = Modifier.size(16.dp))
+            FilledTonalButton(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    onOpenSubtitleSettingsClick()
+                    onDismiss()
+                },
+            ) { Text(text = stringResource(R.string.open_settings)) }
         }
     }
 }

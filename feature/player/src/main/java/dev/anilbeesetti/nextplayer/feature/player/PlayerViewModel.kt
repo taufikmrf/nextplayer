@@ -35,6 +35,7 @@ class PlayerViewModel(
         val navigateUp: () -> Unit,
         val selectSubtitle: () -> Unit,
         val selectAudio: () -> Unit,
+        val openSubtitleSettings: () -> Unit,
         val playInBackground: () -> Unit,
         val setVideoDecoderMode: (DecoderMode) -> Unit,
         val setAudioDecoderMode: (DecoderMode) -> Unit,
@@ -63,6 +64,8 @@ class PlayerViewModel(
             is PlayerAction.SelectSubtitle -> output.selectSubtitle()
 
             is PlayerAction.SelectAudio -> output.selectAudio()
+
+            is PlayerAction.OpenSubtitleSettings -> output.openSubtitleSettings()
 
             is PlayerAction.PlayInBackground -> output.playInBackground()
 
@@ -202,6 +205,7 @@ sealed interface PlayerAction {
     data object NavigateUp : PlayerAction
     data object SelectSubtitle : PlayerAction
     data object SelectAudio : PlayerAction
+    data object OpenSubtitleSettings : PlayerAction
     data object PlayInBackground : PlayerAction
     data class SetVideoDecoderMode(val mode: DecoderMode) : PlayerAction
     data class SetAudioDecoderMode(val mode: DecoderMode) : PlayerAction

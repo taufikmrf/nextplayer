@@ -57,6 +57,7 @@ internal fun MediaPlayerControls(
     videoZoomAndContentScaleState: VideoZoomAndContentScaleState,
     isPipSupported: Boolean,
     onPictureInPictureClick: () -> Unit,
+    onOpenSubtitleSettingsClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     dpadUpDown: Int? = null,
 ) {
@@ -205,6 +206,7 @@ internal fun MediaPlayerControls(
                 },
                 onSelectSubtitleClick = { onAction(PlayerAction.SelectSubtitle) },
                 onSelectAudioClick = { onAction(PlayerAction.SelectAudio) },
+                onOpenSubtitleSettingsClick = onOpenSubtitleSettingsClick,
                 onSubtitleOptionEvent = {
                     onAction(PlayerAction.OnSubtitleOptionEvent(event = it))
                 },

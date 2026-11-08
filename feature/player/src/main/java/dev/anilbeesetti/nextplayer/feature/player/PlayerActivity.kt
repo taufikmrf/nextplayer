@@ -14,6 +14,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -84,6 +85,23 @@ class PlayerActivity : ComponentActivity() {
 
     private val playlistRepository: PlaylistRepository by inject()
     private val preferencesRepository: PreferencesRepository by inject()
+
+    private val settingsLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+    ) {}
+
+    private fun openSubtitleSettings() {
+        val intent = Intent().setClassName(
+            this,
+            "dev.anilbeesetti.nextplayer.MainActivity",
+        ).apply {
+            putExtra(
+                "open_subtitle_settings",
+                true,
+            )
+        }
+        settingsLauncher.launch(intent)
+    }
 
     private val viewModel: PlayerViewModel by viewModel { parametersOf(playerOutput()) }
     val playerPreferences get() = viewModel.state.value.playerPreferences
@@ -290,6 +308,7 @@ class PlayerActivity : ComponentActivity() {
         navigateUp = ::finishAndStopPlayerSession,
         selectSubtitle = ::selectSubtitle,
         selectAudio = ::selectAudio,
+        openSubtitleSettings = ::openSubtitleSettings,
         playInBackground = {
             playInBackground = true
             finish()
