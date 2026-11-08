@@ -114,6 +114,7 @@ internal fun AddConnectionScreenContent(
     var privateKeyPassphrase by remember { mutableStateOf(value = "") }
     var hostKeyFingerprint by rememberSaveable { mutableStateOf(value = "") }
     var existingPrivateKeyRemoved by rememberSaveable { mutableStateOf(value = false) }
+    var isGuestMode by rememberSaveable { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
 
@@ -135,6 +136,7 @@ internal fun AddConnectionScreenContent(
             privateKeyPassphrase = it.privateKeyPassphrase
             hostKeyFingerprint = it.hostKeyFingerprint
             existingPrivateKeyRemoved = false
+            isGuestMode = it.username.isBlank() && it.protocol != NetworkProtocol.SFTP
         }
     }
 
@@ -167,8 +169,14 @@ internal fun AddConnectionScreenContent(
                         protocol = protocol,
                         path = path,
                     ),
-                    username = username.trim(),
-                    password = if (
+                    username = if (protocol != NetworkProtocol.SFTP && isGuestMode) {
+                        ""
+                    } else {
+                        username.trim()
+                    },
+                    password = if (protocol != NetworkProtocol.SFTP && isGuestMode) {
+                        ""
+                    } else if (
                         protocol == NetworkProtocol.SFTP &&
                         authentication == NetworkAuthentication.SSH_KEY
                     ) {
@@ -406,26 +414,69 @@ internal fun AddConnectionScreenContent(
                 keyboardActions = moveToNext,
                 modifier = Modifier.fillMaxWidth(),
             )
+            val pathKeyboardActions = if (protocol != NetworkProtocol.SFTP && isGuestMode) {
+                KeyboardActions(
+                    onDone = {
+                        focusManager.clearFocus()
+                    },
+                )
+            } else {
+                moveToNext
+            }
+
             NextOutlinedTextField(
                 value = path,
                 enabled = !isTesting,
                 onValueChange = { onChange { path = it } },
                 label = { Text(text = stringResource(R.string.path_share)) },
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                keyboardActions = moveToNext,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = if (protocol != NetworkProtocol.SFTP && isGuestMode) {
+                        ImeAction.Done
+                    } else {
+                        ImeAction.Next
+                    },
+                ),
+                keyboardActions = pathKeyboardActions,
                 modifier = Modifier.fillMaxWidth(),
             )
-            NextOutlinedTextField(
-                value = username,
-                enabled = !isTesting,
-                onValueChange = { onChange { username = it } },
-                label = { Text(text = stringResource(R.string.username)) },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                keyboardActions = moveToNext,
-                modifier = Modifier.fillMaxWidth(),
-            )
+            if (protocol != NetworkProtocol.SFTP) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.guest_mode),
+                        modifier = Modifier.weight(weight = 1f),
+                    )
+                    Switch(
+                        checked = isGuestMode,
+                        onCheckedChange = { checked ->
+                            onChange {
+                                isGuestMode = checked
+                                if (checked) {
+                                    username = ""
+                                    password = ""
+                                }
+                            }
+                        },
+                        enabled = !isTesting,
+                    )
+                }
+            }
+
+            if (protocol == NetworkProtocol.SFTP || !isGuestMode) {
+                NextOutlinedTextField(
+                    value = username,
+                    enabled = !isTesting,
+                    onValueChange = { onChange { username = it } },
+                    label = { Text(text = stringResource(R.string.username)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = moveToNext,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
             if (protocol == NetworkProtocol.SFTP) {
                 Text(
                     text = stringResource(R.string.authentication),
@@ -476,93 +527,95 @@ internal fun AddConnectionScreenContent(
                 }
             }
 
-            if (protocol != NetworkProtocol.SFTP ||
-                authentication == NetworkAuthentication.PASSWORD
-            ) {
-                NextOutlinedTextField(
-                    value = password,
-                    enabled = !isTesting,
-                    onValueChange = { onChange { password = it } },
-                    label = { Text(text = stringResource(R.string.password)) },
-                    singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done,
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            focusManager.clearFocus()
-                            if (canSave) submit()
-                        },
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            } else {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+            if (protocol == NetworkProtocol.SFTP || !isGuestMode) {
+                if (protocol != NetworkProtocol.SFTP ||
+                    authentication == NetworkAuthentication.PASSWORD
                 ) {
-                    OutlinedButton(
-                        onClick = { keyPicker.launch(input = arrayOf("*/*")) },
+                    NextOutlinedTextField(
+                        value = password,
                         enabled = !isTesting,
-                        modifier = Modifier.weight(weight = 1f),
+                        onValueChange = { onChange { password = it } },
+                        label = { Text(text = stringResource(R.string.password)) },
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Done,
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                focusManager.clearFocus()
+                                if (canSave) submit()
+                            },
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(
-                            text = stringResource(
-                                id = if (activeKeyName.isBlank()) {
-                                    R.string.choose_private_key
-                                } else {
-                                    R.string.replace_private_key
+                        OutlinedButton(
+                            onClick = { keyPicker.launch(input = arrayOf("*/*")) },
+                            enabled = !isTesting,
+                            modifier = Modifier.weight(weight = 1f),
+                        ) {
+                            Text(
+                                text = stringResource(
+                                    id = if (activeKeyName.isBlank()) {
+                                        R.string.choose_private_key
+                                    } else {
+                                        R.string.replace_private_key
+                                    },
+                                ),
+                            )
+                        }
+                        if (activeKeyName.isNotBlank()) {
+                            TextButton(
+                                enabled = !isTesting,
+                                onClick = {
+                                    if (selectedPrivateKey != null) {
+                                        onAction(AddConnectionAction.RemoveSelectedPrivateKey)
+                                    } else {
+                                        onChange { existingPrivateKeyRemoved = true }
+                                    }
                                 },
-                            ),
-                        )
+                            ) { Text(text = stringResource(R.string.remove_private_key)) }
+                        }
                     }
                     if (activeKeyName.isNotBlank()) {
-                        TextButton(
-                            enabled = !isTesting,
-                            onClick = {
-                                if (selectedPrivateKey != null) {
-                                    onAction(AddConnectionAction.RemoveSelectedPrivateKey)
-                                } else {
-                                    onChange { existingPrivateKeyRemoved = true }
-                                }
-                            },
-                        ) { Text(text = stringResource(R.string.remove_private_key)) }
+                        Text(
+                            text = selectedPrivateKey?.let {
+                                stringResource(
+                                    R.string.selected_private_key,
+                                    it.displayName,
+                                )
+                            } ?: stringResource(R.string.private_key_stored),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
-                }
-                if (activeKeyName.isNotBlank()) {
-                    Text(
-                        text = selectedPrivateKey?.let {
-                            stringResource(
-                                R.string.selected_private_key,
-                                it.displayName,
-                            )
-                        } ?: stringResource(R.string.private_key_stored),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    NextOutlinedTextField(
+                        value = privateKeyPassphrase,
+                        enabled = !isTesting,
+                        onValueChange = { onChange { privateKeyPassphrase = it } },
+                        label = { Text(text = stringResource(R.string.private_key_passphrase)) },
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Done,
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                focusManager.clearFocus()
+                                if (canSave) submit()
+                            },
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
-                NextOutlinedTextField(
-                    value = privateKeyPassphrase,
-                    enabled = !isTesting,
-                    onValueChange = { onChange { privateKeyPassphrase = it } },
-                    label = { Text(text = stringResource(R.string.private_key_passphrase)) },
-                    singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done,
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            focusManager.clearFocus()
-                            if (canSave) submit()
-                        },
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                )
             }
             if (protocol == NetworkProtocol.WEBDAV) {
                 Row(

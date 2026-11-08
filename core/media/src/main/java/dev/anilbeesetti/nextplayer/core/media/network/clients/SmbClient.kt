@@ -56,6 +56,21 @@ class SmbClient internal constructor(
                 value =
                     isServerRoot || (shareName.isNotEmpty() && !shareName.contains(char = '/')),
             ) { "Path must be / or just the share name (e.g. Media), without any folders." }
+            val dialects = if (connection.isAnonymous) {
+                arrayOf(
+                    SMB2Dialect.SMB_2_1,
+                    SMB2Dialect.SMB_2_0_2,
+                )
+            } else {
+                arrayOf(
+                    SMB2Dialect.SMB_3_1_1,
+                    SMB2Dialect.SMB_3_0_2,
+                    SMB2Dialect.SMB_3_0,
+                    SMB2Dialect.SMB_2_1,
+                    SMB2Dialect.SMB_2_0_2,
+                )
+            }
+
             // Disable signing/encryption: avoids Key.getEncoded() crashes on Android.
             val config = SmbConfig.builder()
                 .withTimeout(
@@ -66,13 +81,7 @@ class SmbClient internal constructor(
                     35,
                     TimeUnit.SECONDS,
                 )
-                .withDialects(
-                    SMB2Dialect.SMB_3_1_1,
-                    SMB2Dialect.SMB_3_0_2,
-                    SMB2Dialect.SMB_3_0,
-                    SMB2Dialect.SMB_2_1,
-                    SMB2Dialect.SMB_2_0_2,
-                )
+                .withDialects(*dialects)
                 .withDfsEnabled(false)
                 .withMultiProtocolNegotiate(true)
                 .withSigningRequired(false)

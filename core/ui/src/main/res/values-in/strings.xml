@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <string name="guest_mode">Mode tamu</string>
     <string name="appearance_name">Tampilan</string>
     <string name="cancel">Batal</string>
     <string name="disable">Matikan</string>
