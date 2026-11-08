@@ -198,6 +198,10 @@ internal fun MediaPlayerContent(
                     useMaterialYouControls = playerPreferences.useMaterialYouControls,
                     controlsVisible = controlsVisibilityState.controlsVisible &&
                         !controlsVisibilityState.controlsLocked,
+                    textColor = playerPreferences.subtitleTextColor,
+                    shadowColor = playerPreferences.subtitleShadowColor,
+                    shadowRadius = playerPreferences.subtitleShadowRadius,
+                    externalFontUri = playerPreferences.subtitleExternalFontUri,
                 ),
             )
             if (volumeAndBrightnessGestureState != null) {

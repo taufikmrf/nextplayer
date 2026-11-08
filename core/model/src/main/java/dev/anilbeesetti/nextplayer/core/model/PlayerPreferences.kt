@@ -56,9 +56,13 @@ data class PlayerPreferences(
     val preferredSubtitleLanguage: String = "",
     val subtitleTextEncoding: String = "",
     val subtitleTextSize: Int = DEFAULT_SUBTITLE_TEXT_SIZE,
+    val subtitleTextColor: Int = DEFAULT_SUBTITLE_TEXT_COLOR,
     val subtitleBackground: Boolean = false,
     val subtitleFont: Font = Font.DEFAULT,
     val subtitleTextBold: Boolean = true,
+    val subtitleShadowColor: Int = DEFAULT_SUBTITLE_SHADOW_COLOR,
+    val subtitleShadowRadius: Float = DEFAULT_SUBTITLE_SHADOW_RADIUS,
+    val subtitleExternalFontUri: String = "",
     val applyEmbeddedStyles: Boolean = true,
     // Vertical distance from the default subtitle spot, as a fraction of the player height.
     val subtitleOffsetY: Float = 0f,
@@ -70,6 +74,9 @@ data class PlayerPreferences(
         const val DEFAULT_VOLUME_GESTURE_SENSITIVITY = 0.50f
         const val DEFAULT_BRIGHTNESS_GESTURE_SENSITIVITY = 0.50f
         const val DEFAULT_SUBTITLE_TEXT_SIZE = 20
+        const val DEFAULT_SUBTITLE_TEXT_COLOR = 0xFFFFFFFF.toInt()
+        const val DEFAULT_SUBTITLE_SHADOW_COLOR = 0
+        const val DEFAULT_SUBTITLE_SHADOW_RADIUS = 0.0f
         const val DEFAULT_CONTROLLER_AUTO_HIDE_TIMEOUT = 4
     }
 }

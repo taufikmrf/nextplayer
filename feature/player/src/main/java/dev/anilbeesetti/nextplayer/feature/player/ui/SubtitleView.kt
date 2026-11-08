@@ -226,15 +226,28 @@ private fun createCaptionStyle(
     val style = if (configuration.useSystemCaptionStyle && captioningManager != null) {
         CaptionStyleCompat.createFromCaptionStyle(captioningManager.userStyle)
     } else {
+        val baseTypeface = if (configuration.externalFontUri.isNotBlank()) {
+            loadExternalTypeface(
+                context,
+                configuration.externalFontUri,
+            )
+        } else {
+            null
+        } ?: configuration.font.toTypeface()
+
         CaptionStyleCompat(
-            android.graphics.Color.WHITE,
+            configuration.textColor,
             android.graphics.Color.BLACK.takeIf { configuration.showBackground }
                 ?: android.graphics.Color.TRANSPARENT,
             android.graphics.Color.TRANSPARENT,
-            CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW,
-            android.graphics.Color.BLACK,
+            if (configuration.shadowRadius > 0f && configuration.shadowColor != 0) {
+                CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW
+            } else {
+                CaptionStyleCompat.EDGE_TYPE_NONE
+            },
+            configuration.shadowColor,
             Typeface.create(
-                configuration.font.toTypeface(),
+                baseTypeface,
                 Typeface.BOLD.takeIf { configuration.textBold } ?: Typeface.NORMAL,
             ),
         )
@@ -250,6 +263,26 @@ private fun createCaptionStyle(
     )
 }
 
+private fun loadExternalTypeface(context: Context, uriString: String): Typeface? = try {
+    val uri = android.net.Uri.parse(uriString)
+    val pfd = context.contentResolver.openFileDescriptor(
+        uri,
+        "r",
+    )
+    if (pfd != null) {
+        val fileDescriptor = pfd.fileDescriptor
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            Typeface.Builder(fileDescriptor).build()
+        } else {
+            null
+        }
+    } else {
+        null
+    }
+} catch (_: Exception) {
+    null
+}
+
 @Stable
 data class SubtitleConfiguration(
     val useSystemCaptionStyle: Boolean,
@@ -260,4 +293,8 @@ data class SubtitleConfiguration(
     val applyEmbeddedStyles: Boolean,
     val useMaterialYouControls: Boolean,
     val controlsVisible: Boolean,
+    val textColor: Int = android.graphics.Color.WHITE,
+    val shadowColor: Int = 0,
+    val shadowRadius: Float = 0.0f,
+    val externalFontUri: String = "",
 )

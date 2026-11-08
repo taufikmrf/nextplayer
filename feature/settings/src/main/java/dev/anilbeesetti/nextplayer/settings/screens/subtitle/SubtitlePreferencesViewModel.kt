@@ -69,6 +69,22 @@ class SubtitlePreferencesViewModel(
                 toggleUseSystemCaptionStyle()
 
             is SubtitlePreferencesUiEvent.ResetSubtitlePosition -> resetSubtitlePosition()
+
+            is SubtitlePreferencesUiEvent.UpdateSubtitleTextColor -> updateSubtitleTextColor(
+                action.value,
+            )
+
+            is SubtitlePreferencesUiEvent.UpdateSubtitleShadowColor -> updateSubtitleShadowColor(
+                action.value,
+            )
+
+            is SubtitlePreferencesUiEvent.UpdateSubtitleShadowRadius -> updateSubtitleShadowRadius(
+                action.value,
+            )
+
+            is SubtitlePreferencesUiEvent.UpdateSubtitleExternalFont -> updateSubtitleExternalFont(
+                action.value,
+            )
         }
     }
 
@@ -101,6 +117,41 @@ class SubtitlePreferencesViewModel(
     private fun updateSubtitleFontSize(value: Int) {
         viewModelScope.launch {
             preferencesRepository.updatePlayerPreferences { it.copy(subtitleTextSize = value) }
+        }
+    }
+
+    private fun updateSubtitleTextColor(value: Int) {
+        viewModelScope.launch {
+            preferencesRepository.updatePlayerPreferences { it.copy(subtitleTextColor = value) }
+        }
+    }
+
+    private fun updateSubtitleShadowColor(value: Int) {
+        viewModelScope.launch {
+            preferencesRepository.updatePlayerPreferences {
+                if (value != 0 && it.subtitleShadowRadius == 0f) {
+                    it.copy(
+                        subtitleShadowColor = value,
+                        subtitleShadowRadius = 2.0f,
+                    )
+                } else {
+                    it.copy(subtitleShadowColor = value)
+                }
+            }
+        }
+    }
+
+    private fun updateSubtitleShadowRadius(value: Float) {
+        viewModelScope.launch {
+            preferencesRepository.updatePlayerPreferences { it.copy(subtitleShadowRadius = value) }
+        }
+    }
+
+    private fun updateSubtitleExternalFont(value: String) {
+        viewModelScope.launch {
+            preferencesRepository.updatePlayerPreferences {
+                it.copy(subtitleExternalFontUri = value)
+            }
         }
     }
 
@@ -151,6 +202,8 @@ sealed interface SubtitlePreferenceDialog {
     data object SubtitleLanguageDialog : SubtitlePreferenceDialog
     data object SubtitleFontDialog : SubtitlePreferenceDialog
     data object SubtitleEncodingDialog : SubtitlePreferenceDialog
+    data object SubtitleTextColorDialog : SubtitlePreferenceDialog
+    data object SubtitleShadowColorDialog : SubtitlePreferenceDialog
 }
 
 sealed interface SubtitlePreferencesUiEvent {
@@ -161,6 +214,10 @@ sealed interface SubtitlePreferencesUiEvent {
     data class UpdateSubtitleFont(val value: Font) : SubtitlePreferencesUiEvent
     data object ToggleSubtitleTextBold : SubtitlePreferencesUiEvent
     data class UpdateSubtitleFontSize(val value: Int) : SubtitlePreferencesUiEvent
+    data class UpdateSubtitleTextColor(val value: Int) : SubtitlePreferencesUiEvent
+    data class UpdateSubtitleShadowColor(val value: Int) : SubtitlePreferencesUiEvent
+    data class UpdateSubtitleShadowRadius(val value: Float) : SubtitlePreferencesUiEvent
+    data class UpdateSubtitleExternalFont(val value: String) : SubtitlePreferencesUiEvent
     data object ToggleSubtitleBackground : SubtitlePreferencesUiEvent
     data object ToggleApplyEmbeddedStyles : SubtitlePreferencesUiEvent
     data class UpdateSubtitleEncoding(val value: String) : SubtitlePreferencesUiEvent
