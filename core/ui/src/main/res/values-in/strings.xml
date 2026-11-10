@@ -125,6 +125,7 @@
     <string name="subtitle_text_color">Warna teks subtitle</string>
     <string name="subtitle_shadow_color">Warna bayangan subtitle</string>
     <string name="subtitle_shadow_thickness">Tebal bayangan subtitle</string>
+    <string name="playing_info_overlay_text_color">Warna teks info pemutaran</string>
     <string name="color_white">Putih</string>
     <string name="color_black">Hitam</string>
     <string name="color_yellow">Kuning</string>

@@ -50,3 +50,4 @@ docs/*
 !docs/agents/
 .superpowers
 .koda
+/release/

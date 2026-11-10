@@ -82,6 +82,9 @@ class PlayerPreferencesViewModel(
 
             is PlayerPreferencesUiEvent.ToggleUseMaterialYouControls ->
                 toggleUseMaterialYouControls()
+
+            is PlayerPreferencesUiEvent.UpdatePlayingInfoOverlayTextColor ->
+                updatePlayingInfoOverlayTextColor(action.value)
         }
     }
 
@@ -182,6 +185,14 @@ class PlayerPreferencesViewModel(
             }
         }
     }
+
+    private fun updatePlayingInfoOverlayTextColor(value: Int) {
+        viewModelScope.launch {
+            preferencesRepository.updatePlayerPreferences {
+                it.copy(playingInfoOverlayTextColor = value)
+            }
+        }
+    }
 }
 
 @Stable
@@ -194,6 +205,7 @@ sealed interface PlayerPreferenceDialog {
     data object ResumeDialog : PlayerPreferenceDialog
     data object PlayerScreenOrientationDialog : PlayerPreferenceDialog
     data object ControlButtonsDialog : PlayerPreferenceDialog
+    data object PlayingInfoOverlayTextColorDialog : PlayerPreferenceDialog
 }
 
 sealed interface PlayerPreferencesUiEvent {
@@ -214,4 +226,5 @@ sealed interface PlayerPreferencesUiEvent {
     data class UpdateDefaultPlaybackSpeed(val value: Float) : PlayerPreferencesUiEvent
     data class UpdateControlAutoHideTimeout(val value: Int) : PlayerPreferencesUiEvent
     data object ToggleUseMaterialYouControls : PlayerPreferencesUiEvent
+    data class UpdatePlayingInfoOverlayTextColor(val value: Int) : PlayerPreferencesUiEvent
 }

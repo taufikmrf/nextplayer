@@ -43,6 +43,7 @@ data class PlayerPreferences(
     val hidePlayerButtonsBackground: Boolean = false,
     val useMaterialYouControls: Boolean = false,
     val showRemainingTime: Boolean = false,
+    val playingInfoOverlayTextColor: Int = DEFAULT_PLAYING_INFO_OVERLAY_TEXT_COLOR,
 
     // Audio Preferences
     val preferredAudioLanguage: String = "",
@@ -80,5 +81,6 @@ data class PlayerPreferences(
         const val DEFAULT_SUBTITLE_SHADOW_RADIUS = 0.0f
         const val DEFAULT_SUBTITLE_BACKGROUND_OPACITY = 0.75f
         const val DEFAULT_CONTROLLER_AUTO_HIDE_TIMEOUT = 4
+        const val DEFAULT_PLAYING_INFO_OVERLAY_TEXT_COLOR = 0xFFFFFFFF.toInt()
     }
 }

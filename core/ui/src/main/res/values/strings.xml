@@ -149,6 +149,7 @@
     <string name="subtitle_text_color">Subtitle text color</string>
     <string name="subtitle_shadow_color">Subtitle shadow color</string>
     <string name="subtitle_shadow_thickness">Subtitle shadow thickness</string>
+    <string name="playing_info_overlay_text_color">Playback info text color</string>
     <string name="color_white">White</string>
     <string name="color_black">Black</string>
     <string name="color_yellow">Yellow</string>

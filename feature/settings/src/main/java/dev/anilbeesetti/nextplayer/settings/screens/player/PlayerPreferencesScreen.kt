@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconButton
@@ -55,7 +54,6 @@ fun PlayerPreferencesScreen(viewModel: PlayerPreferencesViewModel) {
 }
 
 @OptIn(
-    ExperimentalMaterial3Api::class,
     ExperimentalMaterial3ExpressiveApi::class,
 )
 @Composable
@@ -104,6 +102,20 @@ private fun PlayerPreferencesScreenContent(
                     isChecked = state.preferences.useMaterialYouControls,
                     onClick = { onAction(PlayerPreferencesUiEvent.ToggleUseMaterialYouControls) },
                     isFirstItem = true,
+                )
+                ClickablePreferenceItem(
+                    title = stringResource(id = R.string.playing_info_overlay_text_color),
+                    description = getOverlayTextColorName(
+                        color = state.preferences.playingInfoOverlayTextColor,
+                    ),
+                    icon = NextIcons.Appearance,
+                    onClick = {
+                        onAction(
+                            PlayerPreferencesUiEvent.ShowDialog(
+                                value = PlayerPreferenceDialog.PlayingInfoOverlayTextColorDialog,
+                            ),
+                        )
+                    },
                 )
                 PreferenceSlider(
                     title = stringResource(R.string.controller_timeout),
@@ -331,8 +343,79 @@ private fun PlayerPreferencesScreenContent(
                         }
                     }
                 }
+
+                PlayerPreferenceDialog.PlayingInfoOverlayTextColorDialog -> {
+                    OptionsDialog(
+                        text = stringResource(id = R.string.playing_info_overlay_text_color),
+                        onDismissClick = {
+                            onAction(PlayerPreferencesUiEvent.ShowDialog(value = null))
+                        },
+                    ) {
+                        items(OverlayTextColorOptions) { option ->
+                            RadioTextButton(
+                                text = stringResource(id = option.labelRes),
+                                selected =
+                                    option.color == state.preferences.playingInfoOverlayTextColor,
+                                onClick = {
+                                    onAction(
+                                        PlayerPreferencesUiEvent.UpdatePlayingInfoOverlayTextColor(
+                                            value = option.color,
+                                        ),
+                                    )
+                                    onAction(PlayerPreferencesUiEvent.ShowDialog(value = null))
+                                },
+                            )
+                        }
+                    }
+                }
             }
         }
+    }
+}
+
+private data class OverlayTextColorOption(val color: Int, val labelRes: Int)
+
+private val OverlayTextColorOptions = listOf(
+    OverlayTextColorOption(
+        0xFFFFFFFF.toInt(),
+        R.string.color_white,
+    ),
+    OverlayTextColorOption(
+        0xFF000000.toInt(),
+        R.string.color_black,
+    ),
+    OverlayTextColorOption(
+        0xFFFFFF00.toInt(),
+        R.string.color_yellow,
+    ),
+    OverlayTextColorOption(
+        0xFFFF0000.toInt(),
+        R.string.color_red,
+    ),
+    OverlayTextColorOption(
+        0xFF00FF00.toInt(),
+        R.string.color_green,
+    ),
+    OverlayTextColorOption(
+        0xFF00FFFF.toInt(),
+        R.string.color_cyan,
+    ),
+    OverlayTextColorOption(
+        0xFF0000FF.toInt(),
+        R.string.color_blue,
+    ),
+)
+
+@Composable
+private fun getOverlayTextColorName(color: Int): String {
+    val option = OverlayTextColorOptions.firstOrNull { it.color == color }
+    return if (option != null) {
+        stringResource(id = option.labelRes)
+    } else {
+        String.format(
+            "#%08X",
+            color,
+        )
     }
 }
 

@@ -427,7 +427,7 @@ private fun SubtitlePreferencesScreenContent(
                 ClickablePreferenceItem(
                     title = stringResource(id = R.string.subtitle_shadow_color),
                     description = getSubtitleShadowColorName(state.preferences.subtitleShadowColor),
-                    icon = NextIcons.Contrast,
+                    icon = NextIcons.Background,
                     enabled = state.preferences.useSystemCaptionStyle.not(),
                     onClick = {
                         onAction(
@@ -442,7 +442,7 @@ private fun SubtitlePreferencesScreenContent(
                 PreferenceSlider(
                     title = stringResource(id = R.string.subtitle_shadow_thickness),
                     description = state.preferences.subtitleShadowRadius.toInt().toString(),
-                    icon = NextIcons.Size,
+                    icon = NextIcons.FontSize,
                     enabled = isShadowEnabled,
                     value = state.preferences.subtitleShadowRadius,
                     valueRange = 0f..10f,
