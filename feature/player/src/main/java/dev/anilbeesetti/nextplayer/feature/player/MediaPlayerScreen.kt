@@ -32,6 +32,10 @@ import androidx.compose.material.icons.sharp.Battery5Bar
 import androidx.compose.material.icons.sharp.Battery6Bar
 import androidx.compose.material.icons.sharp.BatteryChargingFull
 import androidx.compose.material.icons.sharp.BatteryFull
+import androidx.compose.material.icons.sharp.HourglassBottom
+import androidx.compose.material.icons.sharp.HourglassDisabled
+import androidx.compose.material.icons.sharp.HourglassEmpty
+import androidx.compose.material.icons.sharp.HourglassFull
 import androidx.compose.material.icons.sharp.HourglassTop
 import androidx.compose.material.icons.sharp.Schedule
 import androidx.compose.material3.Icon
@@ -481,6 +485,19 @@ private fun PlayingPlaybackInfoOverlay(
         }
     }
 
+    val isPlayingState = rememberIsPlayingState(player = player)
+    val playbackIcon = remember(
+        key1 = progressState.currentPositionMs,
+        key2 = progressState.durationMs,
+        key3 = isPlayingState,
+    ) {
+        getPlaybackIcon(
+            currentPosition = progressState.currentPositionMs,
+            duration = progressState.durationMs,
+            isPlaying = isPlayingState,
+        )
+    }
+
     val textColor = Color(overlayTextColor)
     val overlayTextStyle = MaterialTheme.typography.labelMedium.copy(
         fontWeight = FontWeight.Bold,
@@ -529,7 +546,7 @@ private fun PlayingPlaybackInfoOverlay(
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
-                            imageVector = Icons.Sharp.HourglassTop,
+                            imageVector = playbackIcon,
                             contentDescription = null,
                             modifier = Modifier.size(13.dp),
                             tint = textColor,
@@ -647,5 +664,26 @@ private fun getBatteryIcon(level: Int, isCharging: Boolean): ImageVector {
         level <= 75 -> Icons.Sharp.Battery5Bar
         level <= 90 -> Icons.Sharp.Battery6Bar
         else -> Icons.Sharp.BatteryFull
+    }
+}
+
+private fun getPlaybackIcon(
+    currentPosition: Long,
+    duration: Long,
+    isPlaying: Boolean,
+): ImageVector {
+    if (!isPlaying) return Icons.Sharp.HourglassDisabled
+    if (duration <= 0L) return Icons.Sharp.HourglassTop
+    val progress = (currentPosition.toDouble() / duration * 100)
+        .toInt()
+        .coerceIn(
+            0,
+            100,
+        )
+    return when (progress) {
+        in 0..25 -> Icons.Sharp.HourglassTop
+        in 26..50 -> Icons.Sharp.HourglassFull
+        in 51..99 -> Icons.Sharp.HourglassBottom
+        else -> Icons.Sharp.HourglassEmpty
     }
 }
