@@ -81,6 +81,9 @@ internal fun MediaPlayerControls(
     }
 
     fun showOverlay(overlay: OverlayView) {
+        if (player.isPlaying) {
+            player.pause()
+        }
         controlsVisibilityState.hideControls()
         overlayView = overlay
     }

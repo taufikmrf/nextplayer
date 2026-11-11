@@ -61,6 +61,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -229,6 +230,13 @@ internal fun MediaPlayerContent(
         } else if (wasDraggingSubtitle) {
             wasDraggingSubtitle = false
             controlsVisibilityState.showControls()
+        }
+    }
+
+    val windowInfo = LocalWindowInfo.current
+    LaunchedEffect(windowInfo.isWindowFocused) {
+        if (!windowInfo.isWindowFocused && player.isPlaying) {
+            player.pause()
         }
     }
 
