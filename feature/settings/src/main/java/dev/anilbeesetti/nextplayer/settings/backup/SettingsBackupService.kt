@@ -7,6 +7,7 @@ import dev.anilbeesetti.nextplayer.core.data.repository.NetworkConnectionReposit
 import dev.anilbeesetti.nextplayer.core.data.repository.PreferencesRepository
 import dev.anilbeesetti.nextplayer.core.media.network.keys.SshKeyStore
 import dev.anilbeesetti.nextplayer.core.media.network.keys.isValidSshPrivateKey
+import dev.anilbeesetti.nextplayer.core.media.subtitle.SubtitleFontUtils
 import dev.anilbeesetti.nextplayer.core.model.NetworkAuthentication
 import dev.anilbeesetti.nextplayer.core.model.NetworkConnection
 import dev.anilbeesetti.nextplayer.core.ui.R
@@ -54,11 +55,32 @@ class SettingsBackupService(
                     Base64.NO_WRAP,
                 )
             }
+            val playerPrefs = preferencesRepository.playerPreferences.value
+            var fontData: String? = null
+            var fontFileName: String? = null
+            if (playerPrefs.subtitleExternalFontUri.isNotBlank()) {
+                val fontFile = SubtitleFontUtils.resolveFontFile(
+                    context,
+                    playerPrefs.subtitleExternalFontUri,
+                )
+                if (fontFile != null && fontFile.exists() &&
+                    fontFile.length() in 1..MAX_FONT_BYTES.toLong()
+                ) {
+                    fontData = Base64.encodeToString(
+                        fontFile.readBytes(),
+                        Base64.NO_WRAP,
+                    )
+                    fontFileName = fontFile.name
+                }
+            }
+
             val bytes = codec.encode(
                 applicationPreferences = preferencesRepository.applicationPreferences.value,
-                playerPreferences = preferencesRepository.playerPreferences.value,
+                playerPreferences = playerPrefs,
                 networkConnections = connections,
                 sshKeys = keys,
+                subtitleFontData = fontData,
+                subtitleFontFileName = fontFileName,
             ).toByteArray(Charsets.UTF_8)
             require(bytes.size <= MAX_BACKUP_BYTES)
             checkNotNull(
@@ -100,6 +122,43 @@ class SettingsBackupService(
             playerPreferences = preferencesRepository.playerPreferences.value,
             networkConnections = existingConnections,
         )
+
+        var restoredPlayerPrefs = imported.playerPreferences
+        if (!imported.subtitleFontData.isNullOrBlank()) {
+            val fontBytes = runCatching {
+                Base64.decode(
+                    imported.subtitleFontData,
+                    Base64.DEFAULT,
+                )
+            }.getOrNull()
+            if (fontBytes != null && fontBytes.size in 1..MAX_FONT_BYTES) {
+                val fontFile = SubtitleFontUtils.saveFontBytesToInternalStorage(
+                    context,
+                    fontBytes,
+                    imported.subtitleFontFileName,
+                )
+                if (fontFile != null && fontFile.exists()) {
+                    restoredPlayerPrefs = restoredPlayerPrefs.copy(
+                        subtitleExternalFontUri = fontFile.absolutePath,
+                    )
+                }
+            }
+        } else if (restoredPlayerPrefs.subtitleExternalFontUri.isNotBlank()) {
+            val fontFile = SubtitleFontUtils.resolveFontFile(
+                context,
+                restoredPlayerPrefs.subtitleExternalFontUri,
+            )
+            if (fontFile != null && fontFile.exists()) {
+                val savedInternal = SubtitleFontUtils.copyFontToInternalStorage(
+                    context,
+                    Uri.fromFile(fontFile),
+                ) ?: fontFile
+                restoredPlayerPrefs = restoredPlayerPrefs.copy(
+                    subtitleExternalFontUri = savedInternal.absolutePath,
+                )
+            }
+        }
+
         imported.networkConnections.orEmpty().forEach { connection ->
             importConnection(
                 connection,
@@ -108,7 +167,7 @@ class SettingsBackupService(
             )
         }
         preferencesRepository.updateApplicationPreferences { imported.applicationPreferences }
-        preferencesRepository.updatePlayerPreferences { imported.playerPreferences }
+        preferencesRepository.updatePlayerPreferences { restoredPlayerPrefs }
         // Preference data sources log storage failures; do not report an import that did not persist.
         check(
             withTimeoutOrNull(5_000) {
@@ -116,7 +175,7 @@ class SettingsBackupService(
                     it ==
                         imported.applicationPreferences
                 }
-                preferencesRepository.playerPreferences.first { it == imported.playerPreferences }
+                preferencesRepository.playerPreferences.first { it == restoredPlayerPrefs }
                 true
             } == true,
         )
@@ -210,5 +269,6 @@ class SettingsBackupService(
     private companion object {
         const val MAX_BACKUP_BYTES = 32 * 1024 * 1024
         const val MAX_KEY_BYTES = 1024 * 1024
+        const val MAX_FONT_BYTES = 10 * 1024 * 1024
     }
 }

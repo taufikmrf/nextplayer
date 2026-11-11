@@ -32,6 +32,8 @@ internal data class ImportedSettings(
     val playerPreferences: PlayerPreferences,
     val networkConnections: List<NetworkConnection>? = null,
     val sshKeys: Map<String, String> = emptyMap(),
+    val subtitleFontData: String? = null,
+    val subtitleFontFileName: String? = null,
 )
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -47,6 +49,8 @@ internal class SettingsBackupCodec(private val subtitleEncodings: Set<String>) {
         playerPreferences: PlayerPreferences,
         networkConnections: List<NetworkConnection>? = null,
         sshKeys: Map<String, String> = emptyMap(),
+        subtitleFontData: String? = null,
+        subtitleFontFileName: String? = null,
     ): String = buildJsonObject {
         put(
             "version",
@@ -60,6 +64,16 @@ internal class SettingsBackupCodec(private val subtitleEncodings: Set<String>) {
             "playerPreferences",
             JsonObject(json.encodeToJsonElement(playerPreferences).jsonObject - "useSwipeControls"),
         )
+        if (subtitleFontData != null && subtitleFontFileName != null) {
+            put(
+                "subtitleFontData",
+                subtitleFontData,
+            )
+            put(
+                "subtitleFontFileName",
+                subtitleFontFileName,
+            )
+        }
         if (networkConnections != null) {
             put(
                 "networkConnections",
@@ -113,6 +127,8 @@ internal class SettingsBackupCodec(private val subtitleEncodings: Set<String>) {
         sshKeys = (content["sshKeys"] as? JsonObject).orEmpty().mapNotNull { (name, value) ->
             (value as? JsonPrimitive)?.takeIf { it.isString }?.content?.let { name to it }
         }.toMap(),
+        subtitleFontData = content.string("subtitleFontData"),
+        subtitleFontFileName = content.string("subtitleFontFileName"),
     )
 
     private fun mergeConnections(

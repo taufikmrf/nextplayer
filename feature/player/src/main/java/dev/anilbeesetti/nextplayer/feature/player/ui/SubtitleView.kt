@@ -34,6 +34,7 @@ import androidx.media3.common.text.Cue
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.CaptionStyleCompat
 import androidx.media3.ui.SubtitleView
+import dev.anilbeesetti.nextplayer.core.media.subtitle.SubtitleFontUtils
 import dev.anilbeesetti.nextplayer.core.model.Font
 import dev.anilbeesetti.nextplayer.feature.player.buttons.PlayerButtonBlackAlpha
 import dev.anilbeesetti.nextplayer.feature.player.extensions.toTypeface
@@ -277,25 +278,11 @@ private fun createCaptionStyle(
     )
 }
 
-private fun loadExternalTypeface(context: Context, uriString: String): Typeface? = try {
-    val uri = android.net.Uri.parse(uriString)
-    val pfd = context.contentResolver.openFileDescriptor(
-        uri,
-        "r",
+private fun loadExternalTypeface(context: Context, uriString: String): Typeface? =
+    SubtitleFontUtils.loadTypeface(
+        context,
+        uriString,
     )
-    if (pfd != null) {
-        val fileDescriptor = pfd.fileDescriptor
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            Typeface.Builder(fileDescriptor).build()
-        } else {
-            null
-        }
-    } else {
-        null
-    }
-} catch (_: Exception) {
-    null
-}
 
 @Stable
 data class SubtitleConfiguration(

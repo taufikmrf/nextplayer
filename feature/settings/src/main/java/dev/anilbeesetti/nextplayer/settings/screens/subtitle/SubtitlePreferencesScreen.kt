@@ -47,6 +47,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.anilbeesetti.nextplayer.core.media.subtitle.SubtitleFontUtils
 import dev.anilbeesetti.nextplayer.core.model.Font
 import dev.anilbeesetti.nextplayer.core.model.PlayerPreferences
 import dev.anilbeesetti.nextplayer.core.ui.R
@@ -161,33 +162,11 @@ private fun getSubtitleShadowColorName(color: Int): String {
     }
 }
 
-private fun getFileName(context: android.content.Context, uri: Uri): String {
-    var result: String? = null
-    if (uri.scheme == "content") {
-        context.contentResolver.query(
-            uri,
-            null,
-            null,
-            null,
-            null,
-        )?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                if (nameIndex != -1) {
-                    result = cursor.getString(nameIndex)
-                }
-            }
-        }
-    }
-    if (result == null) {
-        result = uri.path
-        val cut = result?.lastIndexOf('/')
-        if (cut != null && cut != -1) {
-            result = result?.substring(cut + 1)
-        }
-    }
-    return result ?: "External Font"
-}
+private fun getFileName(context: android.content.Context, uri: Uri): String =
+    SubtitleFontUtils.getFontDisplayName(
+        context,
+        uri.toString(),
+    )
 
 @Composable
 fun SubtitlePreferencesScreen(viewModel: SubtitlePreferencesViewModel) {
@@ -524,9 +503,14 @@ private fun SubtitlePreferencesScreenContent(
                                     Intent.FLAG_GRANT_READ_URI_PERMISSION,
                                 )
                             } catch (_: Exception) {}
+                            val savedFile = SubtitleFontUtils.copyFontToInternalStorage(
+                                context,
+                                uri,
+                            )
+                            val fontUriToSave = savedFile?.absolutePath ?: uri.toString()
                             onAction(
                                 SubtitlePreferencesUiEvent.UpdateSubtitleExternalFont(
-                                    uri.toString(),
+                                    fontUriToSave,
                                 ),
                             )
                             onAction(SubtitlePreferencesUiEvent.ShowDialog(value = null))
@@ -552,6 +536,10 @@ private fun SubtitlePreferencesScreenContent(
                                         SubtitlePreferencesUiEvent.UpdateSubtitleExternalFont(
                                             value = "",
                                         ),
+                                    )
+                                    SubtitleFontUtils.cleanupUnusedFontFiles(
+                                        context,
+                                        null,
                                     )
                                     onAction(SubtitlePreferencesUiEvent.ShowDialog(value = null))
                                 },
