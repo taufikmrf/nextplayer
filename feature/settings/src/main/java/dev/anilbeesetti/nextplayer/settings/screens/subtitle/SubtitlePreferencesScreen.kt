@@ -1,8 +1,8 @@
 package dev.anilbeesetti.nextplayer.settings.screens.subtitle
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
-import android.provider.OpenableColumns
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,13 +18,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import dev.anilbeesetti.nextplayer.core.ui.components.CancelButton
+import dev.anilbeesetti.nextplayer.core.ui.components.NextDialog
+import dev.anilbeesetti.nextplayer.core.ui.components.NextOutlinedTextField
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
@@ -67,6 +76,7 @@ import dev.anilbeesetti.nextplayer.settings.composables.OptionsDialog
 import dev.anilbeesetti.nextplayer.settings.extensions.name
 import dev.anilbeesetti.nextplayer.settings.utils.LocalesHelper
 import java.nio.charset.Charset
+import androidx.core.net.toUri
 
 private data class SubtitleColorOption(val color: Int, val labelRes: Int)
 
@@ -178,9 +188,7 @@ fun SubtitlePreferencesScreen(viewModel: SubtitlePreferencesViewModel) {
     )
 }
 
-@OptIn(
-    ExperimentalMaterial3ExpressiveApi::class,
-)
+@SuppressLint("UseKtx")
 @Composable
 private fun SubtitlePreferencesScreenContent(
     state: SubtitlePreferencesUiState,
@@ -288,7 +296,7 @@ private fun SubtitlePreferencesScreenContent(
                 val fontDescription = if (externalUri.isNotBlank()) {
                     remember(externalUri) {
                         runCatching {
-                            val uri = Uri.parse(externalUri)
+                            val uri = externalUri.toUri()
                             getFileName(
                                 context,
                                 uri,
@@ -469,27 +477,76 @@ private fun SubtitlePreferencesScreenContent(
         state.showDialog?.let { showDialog ->
             when (showDialog) {
                 SubtitlePreferenceDialog.SubtitleLanguageDialog -> {
-                    OptionsDialog(
-                        text = stringResource(id = R.string.preferred_subtitle_lang),
-                        onDismissClick = {
-                            onAction(SubtitlePreferencesUiEvent.ShowDialog(value = null))
-                        },
-                    ) {
-                        items(items = languages) {
-                            RadioTextButton(
-                                text = it.first,
-                                selected = it.second == state.preferences.preferredSubtitleLanguage,
-                                onClick = {
-                                    onAction(
-                                        SubtitlePreferencesUiEvent.UpdateSubtitleLanguage(
-                                            it.second,
-                                        ),
-                                    )
-                                    onAction(SubtitlePreferencesUiEvent.ShowDialog(value = null))
-                                },
-                            )
+                    var searchQuery by remember { mutableStateOf("") }
+                    val filteredLanguages = remember(searchQuery, languages) {
+                        if (searchQuery.isBlank()) {
+                            languages
+                        } else {
+                            languages.filter { it.first.contains(searchQuery, ignoreCase = true) }
                         }
                     }
+
+                    NextDialog(
+                        onDismissRequest = {
+                            onAction(SubtitlePreferencesUiEvent.ShowDialog(value = null))
+                        },
+                        title = { Text(text = stringResource(id = R.string.preferred_subtitle_lang)) },
+                        content = {
+                            HorizontalDivider()
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                            ) {
+                                NextOutlinedTextField(
+                                    value = searchQuery,
+                                    onValueChange = { searchQuery = it },
+                                    placeholder = { Text(text = stringResource(id = R.string.search)) },
+                                    trailingIcon = {
+                                        Icon(
+                                            imageVector = NextIcons.Search,
+                                            contentDescription = null,
+                                        )
+                                    },
+                                    singleLine = true,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                LazyColumn(
+                                    contentPadding = PaddingValues(vertical = 8.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(max = 300.dp)
+                                        .selectableGroup()
+                                        .tvListFocus(),
+                                ) {
+                                    items(items = filteredLanguages) {
+                                        RadioTextButton(
+                                            text = it.first,
+                                            selected = it.second == state.preferences.preferredSubtitleLanguage,
+                                            onClick = {
+                                                onAction(
+                                                    SubtitlePreferencesUiEvent.UpdateSubtitleLanguage(
+                                                        it.second,
+                                                    ),
+                                                )
+                                                onAction(SubtitlePreferencesUiEvent.ShowDialog(value = null))
+                                            },
+                                        )
+                                    }
+                                }
+                            }
+                            HorizontalDivider()
+                        },
+                        dismissButton = {
+                            CancelButton(onClick = {
+                                onAction(SubtitlePreferencesUiEvent.ShowDialog(value = null))
+                            })
+                        },
+                        confirmButton = {},
+                    )
                 }
 
                 SubtitlePreferenceDialog.SubtitleFontDialog -> {
@@ -554,7 +611,7 @@ private fun SubtitlePreferencesScreenContent(
                             val fontName = if (externalUri.isNotBlank()) {
                                 remember(externalUri) {
                                     runCatching {
-                                        val uri = Uri.parse(externalUri)
+                                        val uri = externalUri.toUri()
                                         getFileName(
                                             context,
                                             uri,
