@@ -741,6 +741,19 @@ private fun DeleteConfirmationDialog(
         dismissButton = { CancelButton(onClick = onCancel) },
         modifier = modifier,
         content = {
+            val singleName = if (selectedFolders.size + selectedVideos.size == 1) {
+                selectedVideos.firstOrNull()?.name ?: selectedFolders.firstOrNull()?.name
+            } else {
+                null
+            }
+            if (singleName != null) {
+                Text(
+                    text = "\"$singleName\"",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+            }
             Text(
                 text = if (permanently || !trashSupported) {
                     if ((selectedFolders.size + selectedVideos.size) == 1) {

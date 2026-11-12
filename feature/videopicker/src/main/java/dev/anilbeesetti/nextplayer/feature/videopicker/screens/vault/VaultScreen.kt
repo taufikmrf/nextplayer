@@ -644,6 +644,9 @@ private fun VaultGalleryContent(state: VaultUiState, onAction: (VaultAction) -> 
     }
 
     if (showDeleteConfirmation) {
+        val singleVideoName = remember(selectionManager.selectionItems) {
+            (selectionManager.selectionItems.firstOrNull() as? SelectionItem.Video)?.name
+        }
         NextDialog(
             onDismissRequest = { showDeleteConfirmation = false },
             title = {
@@ -658,7 +661,19 @@ private fun VaultGalleryContent(state: VaultUiState, onAction: (VaultAction) -> 
                     },
                 )
             },
-            content = { Text(text = stringResource(R.string.delete_from_vault_info)) },
+            content = {
+                Column {
+                    if (singleVideoName != null) {
+                        Text(
+                            text = "\"$singleVideoName\"",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 8.dp),
+                        )
+                    }
+                    Text(text = stringResource(R.string.delete_from_vault_info))
+                }
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
