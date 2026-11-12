@@ -40,7 +40,22 @@ subprojects {
 }
 
 allprojects {
+    configurations.all {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.bouncycastle") {
+                useVersion(rootProject.libs.versions.bouncyCastle.get())
+            }
+        }
+    }
+
     tasks.withType<Test>().configureEach {
+        jvmArgs(
+            "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED",
+            "--add-opens=java.base/java.io=ALL-UNNAMED",
+            "--add-opens=java.base/java.lang=ALL-UNNAMED",
+            "--add-opens=java.base/java.util=ALL-UNNAMED",
+        )
+
         testLogging {
             events = setOf(
                 TestLogEvent.PASSED,

@@ -90,6 +90,8 @@ android {
     packaging {
         resources {
             excludes.add("/META-INF/{AL2.0,LGPL2.1}")
+            excludes.add("META-INF/LICENSE.md")
+            excludes.add("META-INF/NOTICE.md")
             // Picnic signature data from Bouncy Castle; SSH never negotiates Picnic.
             excludes.add("/org/bouncycastle/pqc/legacy/picnic/**")
         }

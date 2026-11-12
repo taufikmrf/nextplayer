@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -101,6 +102,7 @@ import dev.anilbeesetti.nextplayer.settings.screens.subtitle.SubtitlePreferences
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -233,10 +235,17 @@ internal fun MediaPlayerContent(
         }
     }
 
+    val activity = LocalActivity.current
     val windowInfo = LocalWindowInfo.current
     LaunchedEffect(windowInfo.isWindowFocused) {
-        if (!windowInfo.isWindowFocused && player.isPlaying) {
-            player.pause()
+        if (!windowInfo.isWindowFocused) {
+            delay(150.milliseconds)
+            if (!windowInfo.isWindowFocused &&
+                activity?.isChangingConfigurations == false &&
+                player.isPlaying
+            ) {
+                player.pause()
+            }
         }
     }
 
@@ -681,7 +690,7 @@ private fun getPlaybackIcon(
     isPlaying: Boolean,
 ): ImageVector {
     if (!isPlaying) return Icons.Sharp.HourglassDisabled
-    if (duration <= 0L) return Icons.Sharp.HourglassTop
+    if (duration <= 0L) return Icons.Sharp.HourglassFull
     val progress = (currentPosition.toDouble() / duration * 100)
         .toInt()
         .coerceIn(
@@ -689,8 +698,8 @@ private fun getPlaybackIcon(
             100,
         )
     return when (progress) {
-        in 0..25 -> Icons.Sharp.HourglassTop
-        in 26..50 -> Icons.Sharp.HourglassFull
+        in 0..10 -> Icons.Sharp.HourglassFull
+        in 11..50 -> Icons.Sharp.HourglassTop
         in 51..99 -> Icons.Sharp.HourglassBottom
         else -> Icons.Sharp.HourglassEmpty
     }

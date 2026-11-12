@@ -6,11 +6,11 @@ import android.graphics.Typeface
 import android.net.Uri
 import android.os.Environment
 import android.provider.OpenableColumns
+import androidx.core.net.toUri
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.net.URLDecoder
-import androidx.core.net.toUri
 
 object SubtitleFontUtils {
 

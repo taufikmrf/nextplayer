@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -146,9 +147,17 @@ private fun MaterialYouSlider(
         label = "thumbHeight",
     )
 
+    val sliderState = remember(valueRange) {
+        SliderState(
+            value = value,
+            steps = 0,
+            trackRange = valueRange,
+        )
+    }
+    sliderState.value = value
+
     Slider(
-        value = value,
-        valueRange = valueRange,
+        state = sliderState,
         onValueChange = onValueChange,
         onValueChangeFinished = onValueChangeFinished,
         interactionSource = interactionSource,
@@ -165,8 +174,8 @@ private fun MaterialYouSlider(
                         valueRange.endInclusive,
                     ),
             ) {
-                val min = sliderState.valueRange.start
-                val max = sliderState.valueRange.endInclusive
+                val min = sliderState.trackRange.start
+                val max = sliderState.trackRange.endInclusive
                 val range = (max - min).takeIf { it > 0f } ?: 1f
                 val playedFraction = ((sliderState.value - min) / range).coerceIn(
                     minimumValue = 0f,
@@ -315,9 +324,17 @@ private fun SimpleSlider(
         targetValue = if (isFocused) 22.dp else 16.dp,
         label = "thumbSize",
     )
+    val sliderState = remember(valueRange) {
+        SliderState(
+            value = value,
+            steps = 0,
+            trackRange = valueRange,
+        )
+    }
+    sliderState.value = value
+
     Slider(
-        value = value,
-        valueRange = valueRange,
+        state = sliderState,
         onValueChange = onValueChange,
         onValueChangeFinished = onValueChangeFinished,
         modifier = modifier.height(24.dp),
